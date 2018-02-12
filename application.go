@@ -50,12 +50,24 @@ func dbMiddleware() gin.HandlerFunc {
 	}
 }
 
+func loggingMiddleware(w *domain.HTTP2Writer) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Set("loggingWriter", w)
+	}
+}
+
 func main() {
 	urlToBind := fmt.Sprintf(":%d", *port)
+	broadcastTo := domain.HTTP2Writer{Out: make(chan interface{})}
+	gin.DefaultWriter = domain.NewLogMultiplexor(broadcastTo)
 	router := gin.Default()
+
+	router.Use(gin.Recovery())
 	router.Use(dbMiddleware())
 
 	router.POST("/token", handlers.HandleAuth)
 	router.POST("/counts", handlers.HandleCounts)
-	router.Run(urlToBind)
+	router.GET("/logs", loggingMiddleware(&broadcastTo), handlers.HandleCounts)
+
+	router.RunTLS(urlToBind, "./testdata/server.pem", "./testdata/server.key")
 }
