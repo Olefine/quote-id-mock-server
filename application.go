@@ -67,7 +67,7 @@ func main() {
 
 	router.POST("/token", handlers.HandleAuth)
 	router.POST("/counts", handlers.HandleCounts)
-	router.GET("/logs", loggingMiddleware(&broadcastTo), handlers.HandleCounts)
+	router.GET("/logs", loggingMiddleware(&broadcastTo), handlers.HandleLogs)
 
-	router.RunTLS(urlToBind, "./testdata/server.pem", "./testdata/server.key")
+	router.Run(urlToBind)
 }
