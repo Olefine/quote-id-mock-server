@@ -1,0 +1,29 @@
+<html>
+	<h1>Logs</h1>
+  <div id="logs"></div>
+
+  <script>
+		function SetupWS() {
+			var clientUUID = Math.floor((1 + Math.random()) * 0x10000).toString()
+			var socketProtocol = (window.location.protocol[4] == "s") ? "wss:" : "ws:"
+	    var socket = new WebSocket(socketProtocol + "//localhost:3030/ws" + "?uuid=" + clientUUID);
+	    var elementToAppend = document.getElementById("logs")
+
+			window.onbeforeunload = function() {
+				socket.onclose = function () {}; // disable onclose handler first
+				socket.close()
+			};
+
+	    socket.onmessage = function(event) {
+				if(event.data.indexOf("APP") != -1) {
+	      	elementToAppend.innerHTML += "<br>" + event.data + "<br>"
+				} else {
+	      	elementToAppend.innerHTML += event.data + "<br>"
+				}
+	    };
+		}
+
+		document.addEventListener("DOMContentLoaded", SetupWS);
+  </script>
+
+</html>
